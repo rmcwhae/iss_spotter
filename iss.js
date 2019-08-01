@@ -30,4 +30,28 @@ const fetchMyIP = function(callback) {
   });
 };
 
-module.exports = { fetchMyIP };
+const fetchCoordsByIP = function(ip, callback) {
+  request('https://ipvigilante.com/' + ip, (error, response, body) => {
+    // error can be set if invalid domain, user is offline, etc.
+    if (error) {
+      callback(error, null);
+      return;
+    }
+    //if non-200 status, assume server error
+    if (response.statusCode !== 200) {
+      const msg = `Status Code ${response.statusCode} when fetching coordinates for IP. Response: ${body}`;
+      callback(Error(msg), null);
+      return;
+    }
+
+    // if we get here, all's well and we got the data
+    const data = JSON.parse(body);
+    const latLong = {};
+    latLong.latitude = data.data.latitude;
+    latLong.longitude = data.data.longitude;
+    callback(null, latLong);
+      
+  });
+};
+
+module.exports = { fetchMyIP, fetchCoordsByIP };
